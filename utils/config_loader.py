@@ -7,6 +7,7 @@ from YAML/JSON files with fallback to defaults.
 import os
 import json
 import yaml
+import copy
 from typing import Dict, Any, Optional
 
 
@@ -82,7 +83,8 @@ class ConfigLoader:
             config_path: Path to configuration file (YAML or JSON)
         """
         self.config_path = config_path
-        self.config = self.DEFAULT_CONFIG.copy()
+        # Use deep copy to prevent shared state between instances
+        self.config = copy.deepcopy(self.DEFAULT_CONFIG)
 
         if config_path and os.path.exists(config_path):
             self.load_config(config_path)
