@@ -1,5 +1,6 @@
 import os
 import random
+import ast
 
 
 class DeepSeekGenerator:
@@ -40,9 +41,9 @@ class DeepSeekGenerator:
                     try:
                         byte_str = line.split("bytes:")[-1].strip()
                         if byte_str.startswith("b'") or byte_str.startswith('b"'):
-                            byte_data = eval(byte_str)
+                            byte_data = ast.literal_eval(byte_str)
                             self.learned_lengths.append(len(byte_data))
-                    except Exception as e:
+                    except (ValueError, SyntaxError) as e:
                         print(f"[WARN] Skipping malformed line: {e}")
                         continue
 

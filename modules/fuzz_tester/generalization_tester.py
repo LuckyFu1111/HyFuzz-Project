@@ -3,6 +3,7 @@ import time
 import json
 import os
 import re
+import ast
 
 
 def extract_payloads_from_log(filepath):
@@ -17,11 +18,11 @@ def extract_payloads_from_log(filepath):
                 match = re.search(r"bytes:\s+(b[\"'].*[\"'])", line)
                 if match:
                     try:
-                        raw_bytes = eval(match.group(1))
+                        raw_bytes = ast.literal_eval(match.group(1))
                         if isinstance(raw_bytes, bytes):
                             decoded = raw_bytes.decode("utf-8", errors="ignore")
                             payloads.append(decoded)
-                    except Exception as e:
+                    except (ValueError, SyntaxError) as e:
                         print(f"[WARN] Failed to decode line: {e}")
     return payloads
 

@@ -1,0 +1,72 @@
+# HyFuzz Configuration File
+# This file contains default settings for the HyFuzz vulnerability scanner
+
+# Target Configuration
+targets:
+  default_ip: "192.168.25.133"
+  cidr_range: null  # e.g., "192.168.0.0/24"
+
+# Port Scanning Configuration
+port_scanning:
+  ports: [80, 443, 8080, 8443, 8000, 8888, 9090]
+  timeout: 2
+  threads: 10
+
+# Service Detection
+service_detection:
+  timeout: 3
+  user_agent: "HyFuzz/1.0"
+
+# Fuzzing Configuration
+fuzzing:
+  engine: "hypothesis"  # Options: "boofuzz", "hypothesis"
+  max_depth: 3
+  num_examples: 50
+  timeout: 5
+
+# AI Generation Mode
+ai_generation:
+  mode: "none"  # Options: "none", "gan", "deepseek"
+  gan:
+    epochs: 500
+    batch_size: 32
+    learning_rate: 0.0002
+  deepseek:
+    model: "deepseek-r1:8b"
+    temperature: 0.7
+
+# CVE Database
+cve_database:
+  path: "data/cve_database.json"
+  update_interval: 86400  # 24 hours in seconds
+  sources:
+    - "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    - "https://cve.circl.lu/api/last"
+
+# Vulnerability Testing
+vulnerability_testing:
+  timeout: 5
+  max_retries: 2
+  retry_delay: 1
+
+# Reporting
+reporting:
+  output_dir: "reports"
+  formats: ["json", "html"]
+  include_screenshots: false
+  verbose: true
+
+# Logging
+logging:
+  level: "INFO"  # Options: "DEBUG", "INFO", "WARNING", "ERROR"
+  file: "hyfuzz.log"
+  max_size: 10485760  # 10 MB
+  backup_count: 5
+  console_output: true
+  colored_output: true
+
+# Performance
+performance:
+  max_concurrent_scans: 5
+  memory_limit_mb: 2048
+  cache_results: true
