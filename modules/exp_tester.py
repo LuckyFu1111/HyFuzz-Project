@@ -18,8 +18,8 @@ def test_path_traversal(target_ip, port, version):
             response = requests.get(url, timeout=5)
             if "root:" in response.text:
                 return True
-        except:
-            pass
+        except (requests.RequestException, requests.Timeout, requests.ConnectionError) as e:
+            print(f"[WARN] Path traversal test failed: {e}", file=sys.stderr)
     return False
 
 def test_sql_injection(target_ip, port):
@@ -37,8 +37,8 @@ def test_sql_injection(target_ip, port):
         response = requests.get(url, timeout=5)
         if "SQL" in response.text or "syntax" in response.text:
             return True
-    except:
-        pass
+    except (requests.RequestException, requests.Timeout, requests.ConnectionError) as e:
+        print(f"[WARN] SQL injection test failed: {e}", file=sys.stderr)
     return False
 
 def test_nginx_1_8_http_smuggling(target_ip, port):
@@ -60,8 +60,8 @@ def test_nginx_1_8_http_smuggling(target_ip, port):
         response = requests.post(f"http://{target_ip}:{port}", headers=headers, data=data, timeout=5)
         if response.status_code != 400:  # Expecting a bad request response if mitigated
             return True
-    except:
-        pass
+    except (requests.RequestException, requests.Timeout, requests.ConnectionError) as e:
+        print(f"[WARN] HTTP smuggling test (Nginx 1.8) failed: {e}", file=sys.stderr)
     return False
 
 def test_nginx_1_8_buffer_overflow(target_ip, port):
@@ -79,8 +79,8 @@ def test_nginx_1_8_buffer_overflow(target_ip, port):
         response = requests.get(url, timeout=5)
         if response.status_code == 500:  # Server error might indicate overflow
             return True
-    except:
-        pass
+    except (requests.RequestException, requests.Timeout, requests.ConnectionError) as e:
+        print(f"[WARN] Buffer overflow test failed: {e}", file=sys.stderr)
     return False
 
 def test_nginx_1_8_cve_2016_0747(target_ip, port):
@@ -100,8 +100,8 @@ def test_nginx_1_8_cve_2016_0747(target_ip, port):
         response = requests.get(f"http://{target_ip}:{port}/", timeout=5)
         if response.status_code == 502:  # Bad Gateway might indicate resolver issue
             return True
-    except:
-        pass
+    except (requests.RequestException, requests.Timeout, requests.ConnectionError) as e:
+        print(f"[WARN] CVE-2016-0747 test failed: {e}", file=sys.stderr)
     return False
 
 def test_nginx_1_18_cve_2021_23017(target_ip, port):
@@ -119,8 +119,8 @@ def test_nginx_1_18_cve_2021_23017(target_ip, port):
         response = requests.get(url, timeout=5)
         if response.status_code == 200 and "server_names" in response.text:
             return True
-    except:
-        pass
+    except (requests.RequestException, requests.Timeout, requests.ConnectionError) as e:
+        print(f"[WARN] CVE-2021-23017 test failed: {e}", file=sys.stderr)
     return False
 
 def test_nginx_1_18_cve_2021_3618(target_ip, port):
@@ -141,8 +141,8 @@ def test_nginx_1_18_cve_2021_3618(target_ip, port):
         if response.status_code == 101:  # Switching Protocols
             # Further testing would be needed here
             pass
-    except:
-        pass
+    except (requests.RequestException, requests.Timeout, requests.ConnectionError) as e:
+        print(f"[WARN] CVE-2021-3618 test failed: {e}", file=sys.stderr)
     return False  # Actual testing requires more sophisticated tools
 
 def test_nginx_1_18_cve_2020_12440(target_ip, port):
@@ -164,6 +164,6 @@ def test_nginx_1_18_cve_2020_12440(target_ip, port):
         response = requests.post(f"http://{target_ip}:{port}", headers=headers, data=data, timeout=5)
         if response.status_code != 400:  # Expecting a bad request response if mitigated
             return True
-    except:
-        pass
+    except (requests.RequestException, requests.Timeout, requests.ConnectionError) as e:
+        print(f"[WARN] CVE-2020-12440 test failed: {e}", file=sys.stderr)
     return False

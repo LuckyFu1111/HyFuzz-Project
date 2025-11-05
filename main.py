@@ -13,14 +13,54 @@ from modules.fuzz_tester.deepseek_generator import DeepSeekGenerator
 from modules.fuzz_tester.generalization_tester import test_generated_cases
 import os
 import json
+import argparse
+import sys
 
-def main(target_ip):
+def parse_arguments():
+    """Parse command-line arguments for HyFuzz."""
+    parser = argparse.ArgumentParser(
+        description='HyFuzz: A Hybrid AI-Enhanced Vulnerability Detection Framework',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 main.py --targets 192.168.0.100
+  python3 main.py --targets 192.168.0.0/24 --fuzzer hypothesis --ai-mode deepseek
+  python3 main.py --targets 10.0.0.1 --fuzzer boofuzz --ai-mode gan --depth 3 --timeout 10
+        """
+    )
+
+    parser.add_argument('--targets', '-t', type=str, required=False,
+                        help='Target IP address or CIDR range (e.g., 192.168.0.100 or 192.168.0.0/24)')
+    parser.add_argument('--fuzzer', '-f', type=str, choices=['boofuzz', 'hypothesis'],
+                        help='Fuzzing engine to use: boofuzz or hypothesis')
+    parser.add_argument('--ai-mode', '-a', type=str, choices=['none', 'gan', 'deepseek'],
+                        help='AI-based test generation mode: none, gan, or deepseek')
+    parser.add_argument('--depth', '-d', type=int, default=3,
+                        help='Maximum fuzzing depth (default: 3)')
+    parser.add_argument('--timeout', type=int, default=5,
+                        help='Timeout per test in seconds (default: 5)')
+    parser.add_argument('--interactive', '-i', action='store_true',
+                        help='Use interactive mode for selecting options')
+
+    args = parser.parse_args()
+
+    # Validate arguments
+    if not args.interactive and not args.targets:
+        parser.error('--targets is required unless --interactive mode is used')
+
+    return args
+
+def main(target_ip, fuzz_choice=None, testgen_choice=None, max_depth=3):
     logger = setup_logger()
     logger.info("Starting intelligent HTTP vulnerability detection")
 
-    fuzz_choice = select_engine()           # 1: BooFuzz, 2: Hypothesis
-    testgen_choice = select_generation()   # 1: None, 2: GAN, 3: DeepSeek
-    max_depth = select_max_depth()         # Let user choose the max fuzzing depth
+    # Use provided choices or fallback to interactive selection
+    if fuzz_choice is None:
+        fuzz_choice = select_engine()           # 1: BooFuzz, 2: Hypothesis
+    if testgen_choice is None:
+        testgen_choice = select_generation()   # 1: None, 2: GAN, 3: DeepSeek
+    if max_depth is None:
+        max_depth = select_max_depth()         # Let user choose the max fuzzing depth
 
     open_ports = scan_http_ports(target_ip)
     if not open_ports:
@@ -101,5 +141,21 @@ def main(target_ip):
 
 
 if __name__ == "__main__":
-    target_ip = "192.168.25.133"
-    main(target_ip)
+    args = parse_arguments()
+
+    # Map string choices to numeric codes
+    fuzzer_map = {'boofuzz': 1, 'hypothesis': 2}
+    ai_mode_map = {'none': 1, 'gan': 2, 'deepseek': 3}
+
+    if args.interactive:
+        # Interactive mode - use hardcoded default or prompt user
+        target_ip = "192.168.25.133"
+        main(target_ip)
+    else:
+        # CLI mode - use provided arguments
+        target_ip = args.targets
+        fuzz_choice = fuzzer_map.get(args.fuzzer) if args.fuzzer else None
+        testgen_choice = ai_mode_map.get(args.ai_mode) if args.ai_mode else None
+        max_depth = args.depth
+
+        main(target_ip, fuzz_choice, testgen_choice, max_depth)

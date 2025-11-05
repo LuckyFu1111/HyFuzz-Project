@@ -1,5 +1,6 @@
 import os
 import random
+import ast
 import tensorflow as tf
 from datetime import datetime
 
@@ -45,9 +46,9 @@ def load_fuzz_data(log_file=None):
                                 try:
                                     raw = l.split("bytes:")[-1].strip()
                                     if raw.startswith("b'") or raw.startswith('b"'):
-                                        byte_str = eval(raw)
+                                        byte_str = ast.literal_eval(raw)
                                         test_cases.append(len(byte_str))
-                                except Exception as e:
+                                except (ValueError, SyntaxError) as e:
                                     print(f"[WARN] Failed to parse transmitted line: {e}")
     except FileNotFoundError:
         print(f"[ERROR] Log file not found: {resolved_path}")

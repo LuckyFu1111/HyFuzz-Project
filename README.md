@@ -38,25 +38,58 @@ pip install -r requirements.txt
 
 
 ## ▶️ Running the Scanner
-Step 1: Basic Usage
+
+### Command-Line Mode
+
 ```bash
-python3 run_scan.py --targets 192.168.0.0/24 --fuzzer hypothesis --ai-mode deepseek
+# Basic usage with target IP
+python3 main.py --targets 192.168.0.100 --fuzzer hypothesis --ai-mode none
+
+# Advanced usage with all options
+python3 main.py --targets 192.168.0.0/24 --fuzzer boofuzz --ai-mode deepseek --depth 5 --timeout 10
+
+# Get help
+python3 main.py --help
 ```
 
-Step 2: Options
-| Argument    | Description                    |
-| ----------- | ------------------------------ |
-| `--targets` | Target IP or CIDR range        |
-| `--fuzzer`  | `boofuzz` or `hypothesis`      |
-| `--ai-mode` | `none`, `gan`, or `deepseek`   |
-| `--timeout` | Optional scan timeout per host |
+### Interactive Mode
 
-Step 3: Results
-Scan reports will be saved in:
+```bash
+# Run in interactive mode (prompts for all options)
+python3 main.py --interactive
+```
 
-- scan_report.json (machine-readable)
-- report.html (human-readable)
-- fuzz.log (trace of all fuzz attempts)
+### Command-Line Options
+
+| Argument       | Short | Description                              | Default |
+|----------------|-------|------------------------------------------|---------|
+| `--targets`    | `-t`  | Target IP or CIDR range                  | Required (unless `-i`) |
+| `--fuzzer`     | `-f`  | Fuzzing engine: `boofuzz` or `hypothesis` | Interactive prompt |
+| `--ai-mode`    | `-a`  | AI mode: `none`, `gan`, or `deepseek`    | Interactive prompt |
+| `--depth`      | `-d`  | Maximum fuzzing depth                    | 3 |
+| `--timeout`    |       | Timeout per test (seconds)               | 5 |
+| `--interactive`| `-i`  | Use interactive mode                     | False |
+
+### Configuration File
+
+You can also use a configuration file for persistent settings:
+
+```bash
+# Edit the configuration
+nano configs/config.yaml
+
+# HyFuzz will automatically load configs/config.yaml if it exists
+python3 main.py --targets 192.168.1.100
+```
+
+### Output and Results
+
+Scan reports are saved in multiple formats:
+
+- **`<target_ip>_report.json`** - Machine-readable JSON report
+- **`<target_ip>_report.html`** - Human-readable HTML report with visualizations
+- **`fuzz_output/fuzz.log`** - Detailed trace of fuzzing attempts
+- **`generated_output/generated_cases.log`** - AI-generated test cases (if using GAN/DeepSeek)
 
 ## 📊 Reproducing Results
 
@@ -75,16 +108,33 @@ To replicate the experiments described in the paper:
 See experiments/configs/ for example scripts.
 
 ## 🧪 Configuration
-Configuration files for fuzzers, models, and test environments are located in:
-```bash
-/configs/
-├── targets.yaml
-├── gan_config.json
-├── deepseek_prompt.txt
 
-Logs and outputs are written to /results by default.
+HyFuzz supports configuration via YAML or JSON files. The default configuration is located at `configs/config.yaml`.
 
+```yaml
+# Example configuration
+fuzzing:
+  engine: "hypothesis"
+  max_depth: 3
+  timeout: 5
+
+ai_generation:
+  mode: "none"  # Options: none, gan, deepseek
+
+port_scanning:
+  ports: [80, 443, 8080, 8443]
+  timeout: 2
 ```
+
+You can customize:
+- Port scanning parameters
+- Fuzzing engine and depth
+- AI generation settings
+- CVE database paths
+- Report output formats
+- Logging levels
+
+See `configs/config.yaml` for all available options.
 
 ## 📚 Citation
 If you use HyFuzz in your research, please cite:
